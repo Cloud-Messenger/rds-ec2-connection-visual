@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>RDS with EC2 Connection™ – Cloud Messenger™</title>
+<style>
+:root{color-scheme:dark;--bg:#06262b;--panel:#0b3a41;--ink:#e6fbff;--mut:#8fc3cb;--blue:#2fb8ff;--org:#ff9900;--grn:#2ee59d;--term:#031417;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(circle at 20% 0,#0a4650,var(--bg) 60%);color:var(--ink);font:16px/1.55 system-ui,-apple-system,"Segoe UI",sans-serif}
+main{max-width:1000px;margin:0 auto;padding:16px}
+h1{font-size:clamp(1.3rem,4vw,2rem);margin:.2em 0;background:linear-gradient(90deg,var(--blue),var(--grn));-webkit-background-clip:text;background-clip:text;color:transparent}
+.sub{color:var(--mut);margin:0 0 12px}
+.steps{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}
+button{font:inherit;cursor:pointer;border:1px solid #1d6a75;background:var(--panel);color:var(--ink);border-radius:8px;padding:6px 12px}
+button:hover{border-color:var(--blue)}
+.st.on{background:var(--blue);color:#02222a;font-weight:700}.st.done{border-color:var(--grn)}
+.ctl{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+.bar{height:8px;background:#0a2f35;border-radius:9px;overflow:hidden}.bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--blue),var(--grn));transition:width .5s}
+.card{background:rgba(11,58,65,.8);border:1px solid #1d6a75;border-radius:14px;padding:14px;margin:12px 0}
+.card h2{margin:0 0 6px;font-size:1.25rem}
+.tip{border-bottom:1px dotted var(--blue);cursor:help;color:var(--blue)}
+pre{margin:6px 0;background:var(--term);color:var(--grn);border-radius:8px;padding:10px;overflow-x:auto;font:13px/1.45 ui-monospace,Menlo,Consolas,monospace;white-space:pre-wrap;word-break:break-all}
+.cmd{display:flex;gap:6px;align-items:flex-start}.cmd pre{flex:1}
+#term{min-height:150px;max-height:260px;overflow-y:auto}
+.in{display:flex;gap:6px;background:var(--term);border-radius:8px;padding:6px 10px;font:13px ui-monospace,Menlo,Consolas,monospace}
+.in span{color:var(--grn);white-space:nowrap}.in input{flex:1;min-width:0;background:none;border:0;color:var(--ink);font:inherit;outline:0}
+svg{width:100%;height:auto;display:block}
+svg text{fill:var(--ink);font:12px system-ui,sans-serif}
+.dim{opacity:.25;transition:opacity .5s}.lit{opacity:1;filter:drop-shadow(0 0 6px var(--blue))}
+.hero .pipe{stroke:var(--grn);stroke-width:5;filter:drop-shadow(0 0 8px var(--grn))}
+.grid{display:grid;grid-template-columns:1fr;gap:12px}@media(min-width:760px){.grid{grid-template-columns:1fr 1fr}}
+.opt{display:block;width:100%;text-align:left;margin:4px 0}.ok{border-color:var(--grn);background:#0d4a3a}.bad{border-color:#ff6b6b;background:#4a1f1f}
+.promo{border-color:var(--grn)}a{color:var(--blue)}
+.boom{position:fixed;inset:0;pointer-events:none;overflow:hidden}.boom b{position:absolute;top:-30px;font-size:26px;animation:fall 3s linear forwards}
+@keyframes fall{to{transform:translateY(110vh) rotate(360deg)}}
+@media(prefers-reduced-motion:reduce){.boom b{animation-duration:.01s}}
+</style></head><body><main>
+<h1>RDS with EC2 Connection™</h1>
+<p class="sub">Build Your Own Cloud Database Architecture · Cloud Messenger™ interactive lab</p>
+<div class="steps" id="steps"></div>
+<div class="bar"><i id="prog"></i></div>
+<div class="ctl">
+<button id="prev">◀ Previous</button><button id="play">⏸ Pause</button><button id="next">Next ▶</button><button id="reset">↺ Reset</button>
+</div>
+<div class="card"><h2 id="ttl"></h2><div id="exp"></div><div id="cmds"></div><div id="extra"></div></div>
+<div class="card"><svg id="dia" viewBox="0 0 700 250" role="img" aria-label="Laptop to EC2 to RDS architecture">
+<rect id="vpc" x="150" y="10" width="540" height="230" rx="14" fill="none" stroke="var(--blue)" stroke-dasharray="6 5"/>
+<text x="160" y="28">VPC (private network)</text>
+<g id="lap"><rect x="15" y="95" width="100" height="60" rx="6" fill="#1b4a53" stroke="var(--blue)"/><text x="30" y="130">Windows PC</text></g>
+<line id="ssh" x1="115" y1="125" x2="240" y2="125" stroke="var(--blue)" stroke-width="3" stroke-dasharray="5 4"/><text x="140" y="115">SSH :22</text>
+<g id="ec2"><rect x="240" y="85" width="130" height="80" rx="10" fill="#3a2a06" stroke="var(--org)" stroke-width="2"/><text x="258" y="120" style="font-weight:700">EC2 · AL2023</text><text x="258" y="140">MySQL client</text></g>
+<g id="sg1"><rect x="230" y="75" width="150" height="100" rx="12" fill="none" stroke="var(--org)" stroke-dasharray="3 3"/><text x="232" y="190">EC2 SG</text></g>
+<g id="pipeg"><line class="pipe" id="pipe" x1="370" y1="125" x2="520" y2="125" stroke="var(--blue)" stroke-width="3"/><text x="400" y="115">TCP 3306</text></g>
+<g id="rds"><rect x="520" y="85" width="140" height="80" rx="10" fill="#08382a" stroke="var(--grn)" stroke-width="2"/><text x="545" y="120" style="font-weight:700">RDS MySQL</text><text x="545" y="140">cloud-messenger-db</text></g>
+<g id="sg2"><rect x="510" y="75" width="160" height="100" rx="12" fill="none" stroke="var(--grn)" stroke-dasharray="3 3"/><text x="512" y="190">RDS SG: 3306 from EC2 SG</text></g>
+<circle id="p1" r="6" fill="var(--grn)" opacity="0"><animateMotion dur="1.6s" repeatCount="indefinite" path="M370 125 L520 125"/></circle>
+<circle id="p2" r="6" fill="var(--org)" opacity="0"><animateMotion dur="1.6s" begin="0.8s" repeatCount="indefinite" path="M520 135 L370 135"/></circle>
+<text x="15" y="235" id="dcap" style="fill:var(--mut)"></text>
+</svg></div>
+<div class="card"><h2>Terminal simulator</h2>
+<pre id="term" aria-live="polite"></pre>
+<div class="in"><span id="ps">$</span><input id="ti" placeholder="type a command (try help)" autocomplete="off" spellcheck="false"></div></div>
+<div id="quizbox"></div>
+<div class="card promo" id="promo"><h2>🚀 Introducing RDS with EC2 Connection™ – Build Your Own Database Tier!</h2>
+<p>The highlight?</p><pre>mysql -h &lt;RDS-ENDPOINT&gt; -P 3306 -u admin -p</pre>
+<p>One command. One secure database connection. Your own cloud database architecture! My mission is to make cloud engineering visual, practical and beginner-friendly.</p>
+<p>🐙 <a href="https://github.com/Cloud-Messenger" target="_blank" rel="noopener">GitHub</a> · 🌐 <a href="https://cloudmessenger.in/" target="_blank" rel="noopener">Website</a> · 💼 <a href="https://www.linkedin.com/in/ulhas-narwade-aws-certified-devops" target="_blank" rel="noopener">LinkedIn</a></p>
+<p style="color:var(--mut)">#AWS #AmazonRDS #EC2 #AmazonLinux #MySQL #Database #VPC #SecurityGroups #DevOps #CloudComputing #CloudMessenger</p>
+<p><b>Cloud Messenger™</b><br>Learn • Build • Visualize • Troubleshoot • Grow ☁️</p></div>
+<div class="card" id="share"><h2>🤝 Learn, Build, and Share</h2>
+<p>This handbook is designed for:</p>
+<ul style="list-style:none;padding-left:4px;margin:6px 0">
+<li>🎓 Students and freshers.</li><li>💻 Aspiring DevOps Engineers.</li><li>☁️ AWS and Cloud Engineers.</li><li>🐳 Docker and Kubernetes learners.</li><li>🚀 Software Developers.</li><li>🔧 Linux Administrators.</li></ul>
+<p>Cloud Messenger™ is focused on making Cloud Computing, DevOps, and emerging technologies visual, practical, and accessible to everyone.</p>
+<p>Our learning philosophy:<br><b>Learn • Build • Visualize • Troubleshoot • Grow</b></p>
+<p>🌐 Website: <a href="https://cloudmessenger.in" target="_blank" rel="noopener">https://cloudmessenger.in</a><br>
+💼 LinkedIn: <a href="https://www.linkedin.com/in/cloud-messenger" target="_blank" rel="noopener">https://www.linkedin.com/in/cloud-messenger</a><br>
+🐙 GitHub: <a href="https://github.com/Cloud-Messenger" target="_blank" rel="noopener">https://github.com/Cloud-Messenger</a><br>
+🏷️ Community Hashtag: #buildwithCloudMessenger</p>
+<h3>📜 Copyright Notice</h3>
+<p>© 2026 Cloud Messenger™. All rights reserved.</p>
+<p>The compilation, structure, visual design, layout, illustrations, and branding of this handbook are original creative work of Cloud Messenger™.</p>
+<p>Cloud Messenger™ is a trademark of Cloud Messenger.</p>
+<p>Please provide appropriate attribution when sharing or referencing this handbook.</p>
+<p>Made with care by Cloud Messenger™<br>#buildwithCloudMessenger</p></div>
+</main>
+<script>
+const T=(w,d)=>'<span class="tip" title="'+d+'" tabindex="0">'+w+'</span>';
+const tips={VPC:"Virtual Private Cloud: your private network in AWS",AMI:"Amazon Machine Image: an operating system template",SSH:"Secure Shell: encrypted remote login, TCP 22","Security Group":"A virtual firewall attached to a resource",Endpoint:"The DNS hostname used to reach your RDS database"};
+const tp=s=>{for(const k in tips)s=s.split(k).join(T(k,tips[k]));return s};
+const SQLC=["SHOW DATABASES;","CREATE DATABASE cloudmessenger;","USE cloudmessenger;","CREATE TABLE students (id INT PRIMARY KEY, name VARCHAR(100), course VARCHAR(100));","INSERT INTO students VALUES (1, 'Rahul', 'AWS DevOps');","SELECT * FROM students;"];
+const S=[
+{n:"RDS",t:"Step 1 – AWS RDS: Create Your MySQL Database",e:"Console → RDS → Create database → MySQL Community Edition → Full configuration. Identifier <code>cloud-messenger-db</code>, master user <code>admin</code>, a strong password, General Purpose SSD. Analogy: RDS is a secure storage room where an application stores and retrieves information.",c:[],d:"rds",o:["Opening AWS Management Console…","RDS → Create database → MySQL Community → Full configuration","Identifier: cloud-messenger-db | user: admin | storage: gp SSD","Status: Creating …","Status: Available ✔"]},
+{n:"EC2",t:"Step 2 – AWS EC2: Launch Amazon Linux 2023",e:"EC2 → Launch instance. Name <code>Cloud-Messenger-App-Server</code>, AMI Amazon Linux 2023, type t3.micro, create an RSA .pem key pair, same Region and VPC as RDS. EC2 = application/compute tier, RDS = database tier, VPC = private network, AMI = OS template.",c:[],d:"ec2",o:["EC2 → Launch instance","Name: Cloud-Messenger-App-Server","AMI: Amazon Linux 2023 | Type: t3.micro","Key pair: cloud-messenger-key.pem (RSA) downloaded","Region/VPC: same as RDS ✔"]},
+{n:"Security",t:"Step 3 – Security Groups: Build a Secure Bridge",e:"EC2 Security Group: SSH TCP 22 from <b>My IP</b>; HTTP TCP 80 only if hosting a website. RDS Security Group: MySQL/Aurora TCP 3306 with source = the <b>EC2 security group ID</b> (a security group reference, least privilege). Never open 3306 to 0.0.0.0/0. Inbound rules control incoming traffic; outbound rules control outgoing traffic.",c:[],d:"sg",o:["EC2-SG inbound: SSH 22 ← My IP","RDS-SG inbound: MYSQL/Aurora 3306 ← EC2-SG (sg-xxxx)","0.0.0.0/0 on 3306: NEVER ✘","Traffic EC2 → RDS: allowed ✔"]},
+{n:"SSH",t:"Step 4 – Launch EC2 and Connect via Git Bash",e:"Instance state: Pending → Running → 2/2 status checks passed. Copy the Public IPv4 address, open Git Bash in the folder with your .pem key, then connect as <code>ec2-user</code> using private key authentication on port 22.",c:["chmod 400 cloud-messenger-key.pem","ssh -i cloud-messenger-key.pem ec2-user@<EC2-PUBLIC-IP>"],d:"ssh",o:["State: Pending …","State: Running","Status checks: 2/2 passed ✔","Type the two commands below in the simulator →"]},
+{n:"Client",t:"Step 5 – Install the MySQL Client on Amazon Linux",e:"EC2 needs a MySQL <b>client</b> (a program that sends queries) to talk to the remote RDS <b>server</b> (the database engine that stores data). Amazon Linux 2023 ships MariaDB-compatible clients.",c:["sudo dnf update -y","sudo dnf install mariadb105 -y","mysql --version"],d:"ssh",o:["Run the three commands in the simulator →"]},
+{n:"Connect",t:"Step 6 – Connect EC2 to RDS ★ Main Highlight",e:"RDS → Databases → cloud-messenger-db → Connectivity & security → copy the Endpoint; port is 3306. Copying the endpoint alone is not enough: the RDS security group must allow inbound TCP 3306 from the EC2 security group.",c:["mysql -h <RDS-ENDPOINT> -P 3306 -u admin -p"],x:"<table><tr><td><code>-h</code></td><td>RDS endpoint</td></tr><tr><td><code>-P 3306</code></td><td>MySQL port</td></tr><tr><td><code>-u admin</code></td><td>Database user</td></tr><tr><td><code>-p</code></td><td>Secure password prompt</td></tr></table>",d:"hero",o:["Run the mysql command in the simulator (any password works) →"]},
+{n:"SQL",t:"Step 7 – Execute SQL: Create Your First Database",e:"After login, run these in the simulator. The database and records live in RDS, not on the EC2 instance.",c:SQLC,d:"hero",o:["Log in first (Step 6), then run the SQL below →"]},
+{n:"Architecture",t:"Step 8 – Real-World Application-to-Database Architecture",e:"User → HTTP/HTTPS → EC2 (app tier) → MySQL 3306 → RDS (database tier). Flow: 1 user request, 2 EC2 receives it, 3 EC2 builds an SQL query, 4 it crosses the private VPC, 5 RDS processes it, 6 RDS returns rows, 7 EC2 responds to the user. In e-commerce, RDS holds customer profiles, products, orders and payment records.",c:[],d:"flow",o:["1 User request → 2 EC2 receives","3 SQL query built → 4 via private VPC","5 RDS processes → 6 rows returned","7 EC2 responds to user ✔"]},
+{n:"Troubleshoot",t:"Step 9 – Production Troubleshooting Lab",e:"Pick a symptom. Ping failing does not mean MySQL is down; the TCP port test is more relevant.",c:["mysql --version","nslookup <RDS-ENDPOINT>","nc -zv <RDS-ENDPOINT> 3306","ping -c 4 <RDS-ENDPOINT>"],d:"hero",o:["Pick a problem above, then try nc -zv in the simulator →"]}];
+const TS=[["MySQL connection timeout","Port 3306 blocked","Verify RDS SG inbound rule"],["Access denied","Incorrect credentials","Verify DB username/password"],["Unknown host","Incorrect endpoint","Copy the correct RDS endpoint"],["Connection refused","Wrong port or DB unavailable","Verify RDS status and port"],["SSH timeout","Port 22 blocked","Verify EC2 SG and public IP"],["mysql: command not found","Client missing","Install MariaDB-compatible client"],["EC2 cannot reach RDS","VPC/network issue","Verify VPC and network rules"],["Unexpected AWS charges","Resources left running","Review billing, delete unused resources"]];
+const CL=["Delete test databases if no longer required","Review RDS backup and deletion options","Delete the RDS instance","Terminate the EC2 instance","Review security groups and AWS billing"];
+const $=i=>document.getElementById(i);let cur=0,auto=true,tm,done=new Set();
+function tabs(){$("steps").innerHTML="";S.forEach((s,i)=>{const b=document.createElement("button");b.className="st"+(i==cur?" on":"")+(done.has(i)?" done":"");b.textContent=(i+1)+" "+s.n;b.onclick=()=>go(i,true);$("steps").appendChild(b)})}
+function pr(t,c){const e=$("term");e.textContent+=t+"\n";e.scrollTop=1e9}
+function go(i,manual){cur=(i+S.length)%S.length;done.add(cur);const s=S[cur];tabs();
+$("prog").style.width=(done.size/S.length*100)+"%";$("ttl").textContent=s.t;$("exp").innerHTML=tp(s.e);
+$("cmds").innerHTML="";s.c.forEach(c=>{const d=document.createElement("div");d.className="cmd";const p=document.createElement("pre");p.textContent=c;const b=document.createElement("button");b.textContent="Copy";b.onclick=()=>{try{navigator.clipboard.writeText(c);b.textContent="Copied ✔"}catch(e){b.textContent="Select & copy"}setTimeout(()=>b.textContent="Copy",1500)};d.append(p,b);$("cmds").appendChild(d)});
+$("extra").innerHTML=s.x||"";if(cur==7)troub();if(cur==7||cur==8)return;
+const k=s.d,lit=(id,on)=>$(id).setAttribute("class",on?"lit":"dim");
+lit("rds",["rds","hero","flow"].includes(k));lit("ec2",k!="rds");lit("sg1",["sg","hero","flow"].includes(k));lit("sg2",["sg","hero","flow"].includes(k));lit("lap",["ssh","flow"].includes(k)||cur>2);lit("ssh",["ssh","flow"].includes(k));lit("pipeg",["hero","flow","sg"].includes(k));
+$("pipeg").setAttribute("class",(k=="hero"?"hero lit":($("pipeg").getAttribute("class")||"")));
+const pk=["hero","flow"].includes(k);$("p1").setAttribute("opacity",pk?1:0);$("p2").setAttribute("opacity",pk?1:0);
+$("dcap").textContent=pk?"SQL request → and result ← travelling over the private VPC":"";
+$("term").textContent="";let n=0;(function t(){if(n<s.o.length){pr("• "+s.o[n++]);setTimeout(t,500)}})();
+clearTimeout(tm);if(auto&&cur<S.length-1)tm=setTimeout(()=>go(cur+1),5000);
+if(cur==7){showQuiz()}}
+function troub(){let h="<div id=tb></div>";TS.forEach((r,i)=>h+='<button class="opt" data-i="'+i+'">'+r[0]+"</button>");
+h+="<h3>Final cleanup checklist</h3>"+CL.map((c,i)=>'<label style="display:block"><input type="checkbox"> '+c+"</label>").join("");$("extra").innerHTML=h;
+$("extra").querySelectorAll(".opt").forEach(b=>b.onclick=()=>{const r=TS[b.dataset.i];$("tb").innerHTML="<div class=card><b>Root cause:</b> "+r[1]+"<br><b>Fix:</b> "+r[2]+"</div>"});showQuiz()}
+const Q=[["Which source should the RDS security group allow on TCP 3306?","The EC2 security group","0.0.0.0/0","Any IP on the internet",0,"A security group reference gives least-privilege access."],["ping to RDS fails but nc -zv host 3306 succeeds. What does that mean?","MySQL is down","ICMP is blocked but MySQL port is reachable","DNS is broken",1,"Ping uses ICMP; the TCP test is the relevant one."],["Where are your tables stored after CREATE TABLE?","On the EC2 disk","On your laptop","In RDS",2,"EC2 only runs the client; the data lives in RDS."]];
+let qi=0,sc=0;
+function showQuiz(){qi=0;sc=0;quiz()}
+function quiz(){const b=$("quizbox");if(qi>=Q.length){b.innerHTML='<div class="card"><h2>🎉 Quiz complete: '+sc+"/"+Q.length+"</h2><p>You built a cloud database tier!</p></div>";if(sc==Q.length)boom();return}
+const q=Q[qi];b.innerHTML='<div class="card"><h2>Knowledge check '+(qi+1)+"/"+Q.length+"</h2><p>"+q[0]+"</p>"+[1,2,3].map(i=>'<button class="opt" data-i="'+(i-1)+'">'+q[i]+"</button>").join("")+'<p id="qe"></p></div>';
+b.querySelectorAll(".opt").forEach(o=>o.onclick=()=>{const r=+o.dataset.i==q[4];if(r)sc++;o.classList.add(r?"ok":"bad");$("qe").textContent=(r?"Correct. ":"Not quite. ")+q[5];b.querySelectorAll(".opt").forEach(x=>x.disabled=true);setTimeout(()=>{qi++;quiz()},2500)})}
+function boom(){const d=document.createElement("div");d.className="boom";for(let i=0;i<30;i++){const b=document.createElement("b");b.textContent=["☁️","🎉","🗄️","✨"][i%4];b.style.left=Math.random()*100+"%";b.style.animationDelay=Math.random()*1.5+"s";d.appendChild(b)}document.body.appendChild(d);setTimeout(()=>d.remove(),5000)}
+// terminal simulator
+let inSql=false,db=["information_schema","mysql","performance_schema","sys"],use=null,rows=[],hasT=false;
+function box(a){const w=Math.max(...a.map(x=>x.length));const l="+"+"-".repeat(w+2)+"+";return[l,"| "+a[0].padEnd(w)+" |",l,...a.slice(1).map(x=>"| "+x.padEnd(w)+" |"),l].join("\n")}
+function sql(c){const u=c.replace(/;\s*$/,"").replace(/\s+/g," ").trim(),U=u.toUpperCase();
+if(U=="SHOW DATABASES")return box(["Database",...db])+"\n"+db.length+" rows in set";
+if(U.startsWith("CREATE DATABASE")){const n=u.split(" ")[2];if(db.includes(n))return"ERROR 1007: Can't create database; it exists";db.push(n);return"Query OK, 1 row affected"}
+if(U.startsWith("USE ")){const n=u.split(" ")[1];if(!db.includes(n))return"ERROR 1049: Unknown database";use=n;$("ps").textContent="["+n+"]>";return"Database changed"}
+if(U.startsWith("CREATE TABLE")){if(!use)return"ERROR 1046: No database selected";hasT=true;return"Query OK, 0 rows affected"}
+if(U.startsWith("INSERT")){if(!hasT)return"ERROR 1146: Table doesn't exist";rows.push(["1","Rahul","AWS DevOps"]);return"Query OK, 1 row affected"}
+if(U.startsWith("SELECT")){if(!hasT)return"ERROR 1146: Table doesn't exist";const w=[2,6,10];return box(["id | name   | course"," "].slice(0,1).concat(rows.map(r=>r.join(" | "))))+"\n"+rows.length+" row in set"}
+return"ERROR 1064: Syntax error (simulator supports the lesson queries)"}
+function sh(c){const u=c.trim();
+if(u=="help")return"Try: chmod 400 …, ssh -i …, sudo dnf install mariadb105 -y, mysql --version, nslookup, nc -zv, ping, mysql -h <endpoint> -P 3306 -u admin -p";
+if(u=="clear"){$("term").textContent="";return""}
+if(u.startsWith("chmod 400"))return"";
+if(u.startsWith("ssh -i"))return"   ,     #_\n   ~\\_  ####_      Amazon Linux 2023\n  ~~  \\_#####\\\n[ec2-user@ip-10-0-1-25 ~]$";
+if(u.startsWith("sudo dnf update"))return"Dependencies resolved.\nNothing to do. Complete!";
+if(u.startsWith("sudo dnf install mariadb105"))return"Installing: mariadb105 …\n[#######################] 100%\nInstalled: mariadb105-3.x\nComplete!";
+if(u=="mysql --version")return"mysql  Ver 15.1 Distrib 10.5.x-MariaDB, for Linux (x86_64)";
+if(u.startsWith("nslookup"))return"Name: cloud-messenger-db.xxxx.rds.amazonaws.com\nAddress: 10.0.2.37 (private)";
+if(u.startsWith("nc -zv"))return"Connection to host 3306 port [tcp/mysql] succeeded!";
+if(u.startsWith("ping"))return"Request timeout (ICMP often blocked; this does not mean MySQL is down)";
+if(u.startsWith("mysql -h")){if(!/-P\s*3306/.test(u)||!/-u\s*\S+/.test(u))return"ERROR 2002: Check -P 3306 and -u admin";if(u.includes("<RDS-ENDPOINT>"))return"ERROR 2005: Unknown MySQL server host. Replace <RDS-ENDPOINT> with your real endpoint.";inSql=true;$("ps").textContent="mysql>";go2();return"Enter password: ********\nWelcome to the MariaDB monitor.\nServer version: 8.0 MySQL Community (RDS)\n✔ Connected over TCP 3306"}
+return u.split(" ")[0]+": command not found"}
+function go2(){$("p1").setAttribute("opacity",1);$("p2").setAttribute("opacity",1);$("pipeg").setAttribute("class","hero lit")}
+$("ti").addEventListener("keydown",e=>{if(e.key!="Enter")return;const c=e.target.value;e.target.value="";if(!c.trim())return;pr($("ps").textContent+" "+c);
+let o;if(inSql){if(c.trim().toLowerCase()=="exit"||c.trim().toLowerCase()=="quit"){inSql=false;use=null;$("ps").textContent="$";o="Bye"}else o=sql(c)}else o=sh(c);if(o)pr(o)});
+$("next").onclick=()=>go(cur+1,true);$("prev").onclick=()=>go(cur-1,true);
+$("play").onclick=()=>{auto=!auto;$("play").textContent=auto?"⏸ Pause":"▶ Resume";clearTimeout(tm);if(auto)tm=setTimeout(()=>go(cur+1),5000)};
+$("reset").onclick=()=>{done.clear();inSql=false;db=db.slice(0,4);use=null;rows=[];hasT=false;$("ps").textContent="$";auto=true;$("play").textContent="⏸ Pause";go(0)};
+go(0);
+</script></body></html>
